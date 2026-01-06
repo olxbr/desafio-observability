@@ -1,5 +1,6 @@
 import os, json, logging
-from flask import Flask, jsonify
+from flask import Flask, jsonify, Response
+from prometheus_client import Gauge, generate_latest
 app = Flask(__name__)
 
 @app.route('/')
@@ -20,6 +21,16 @@ def code():
         return jsonify({'Code': os.environ['Code']})
     else:
         return jsonify({'Code': 'You forgot to use env ...'})
+
+metric = Gauge('metric_desafio', 'Sample metric do desafio de observability')
+
+def set_metric():
+    metric.set(777)
+
+@app.route("/metrics")
+def metrics():
+    set_metric()
+    return Response(generate_latest(), mimetype='text/plain')
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
